@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafePath - Driver Drowsiness Detection</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <!-- Alert Overlay -->
+    <div id="alert-overlay" class="alert-overlay hidden">
+        <div class="alert-content">
+            <div class="alert-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <div class="alert-text">
+                <h1 class="alert-title">DROWSINESS DETECTED!</h1>
+                <p class="alert-message">Please pull over safely</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                </span>
+                <h1 class="logo-text">DriveSafe <span class="accent">AI</span></h1>
+            </div>
+            <div class="header-status">
+                <div class="connection-indicator">
+                    <span class="dot" id="connection-dot"></span>
+                    <span class="connection-text">Live</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Layout: video center, panels around -->
+        <div class="dashboard-layout">
+            <!-- Top - Current Status -->
+            <div class="card status-card grid-status">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                        <span class="icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </span>
+                        Current Status
+                        </h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-display">
+                            <div class="status-circle" id="status-circle">
+                                <span class="status-icon" id="status-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="status-info">
+                                <h3 class="status-level" id="status-level">Normal</h3>
+                                <p class="status-description" id="status-description">All systems operational</p>
+                            </div>
+                        </div>
+
+                        <div class="drowsiness-meter">
+                            <label class="meter-label">Drowsiness Score</label>
+                            <div class="meter-container">
+                                <div class="meter-bar">
+                                    <div class="meter-fill" id="drowsiness-meter"></div>
+                                </div>
+                                <span class="meter-value" id="drowsiness-value">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Left - Live Metrics -->
+            <div class="card metrics-card grid-metrics">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                        <span class="icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                        </span>
+                        Live Metrics
+                        </h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <div class="metric-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-label">Eye Blinks</span>
+                                    <span class="metric-value" id="blink-count">0</span>
+                                </div>
+                            </div>
+
+                            <div class="metric">
+                                <div class="metric-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                                    </svg>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-label">Yawns</span>
+                                    <span class="metric-value" id="yawn-count">0</span>
+                                </div>
+                            </div>
+
+                            <div class="metric">
+                                <div class="metric-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m12 14 4-4"/>
+                                        <path d="M3.34 19a10 10 0 1 1 17.32 0"/>
+                                    </svg>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-label">EAR Value</span>
+                                    <span class="metric-value" id="ear-value">0.00</span>
+                                </div>
+                            </div>
+
+                            <div class="metric">
+                                <div class="metric-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <ellipse cx="12" cy="14" rx="4" ry="2"/>
+                                    </svg>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-label">MAR Value</span>
+                                    <span class="metric-value" id="mar-value">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Center - Video Feed -->
+            <div class="video-panel card grid-video">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="23 7 16 12 23 17 23 7"/>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                            </svg>
+                        </span>
+                        Live Camera Feed
+                    </h2>
+                </div>
+                <div class="video-container">
+                    <img id="video-feed" src="/video_feed" alt="Video Feed" class="video-stream">
+                    <div class="video-overlay">
+                        <div class="status-badge" id="status-badge">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Initializing...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right - Alert History -->
+            <div class="card alerts-card grid-alerts">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                        <span class="icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                        </span>
+                        Alert History
+                        </h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="alert-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Total Alerts</span>
+                                <span class="stat-value" id="total-alerts">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Last Alert</span>
+                                <span class="stat-value" id="last-alert">None</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Bottom - Chart -->
+            <div class="chart-panel card grid-chart">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <span class="icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </span>
+                    Drowsiness Timeline (Last 60 seconds)
+                </h2>
+            </div>
+            <div class="card-content">
+                <canvas id="drowsiness-chart"></canvas>
+            </div>
+        </div>
+        </div>
+
+        <!-- Footer / License Label -->
+        <footer class="footer">
+            <div class="license-label">
+                <span class="license-text">Developed by Tougui Ghizlane et Hassoun Aya </span>
+                <a href="https://www.linkedin.com/in/ghizlane-tougui/" target="_blank" rel="noopener noreferrer"
+                    class="linkedin-link">
+                    <svg class="linkedin-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                        fill="currentColor">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                </a>
+                <a href="https://www.linkedin.com/in/aya-7-hassoun/" target="_blank" rel="noopener noreferrer"
+                    class="linkedin-link">
+                    <svg class="linkedin-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                        fill="currentColor">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Audio Alert -->
+    <div id="audio-prompt" class="audio-prompt hidden">
+        <button type="button" class="audio-prompt-btn">Enable audio alerts</button>
+    </div>
+
+    <audio id="alert-sound" preload="auto" loop>
+        <source src="assets/alert-sound.wav" type="audio/wav">
+    </audio>
+
+    <script src="js/icons.js"></script>
+    <script src="js/chart-config.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
